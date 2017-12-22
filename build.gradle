@@ -1,0 +1,69 @@
+apply from: 'base.gradle'
+
+project.group = "com.zetainteractive.commons"
+
+configurations.all {
+	// Check for updates every build
+	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+task  fileutilimpl_Jar(type:Jar){
+ manifest {
+        attributes 'Implementation-Title': 'FileUtils',
+                   'Implementation-Version': version,
+                   'Built-By': System.getProperty('user.name'),
+                   'Built-Date': new Date(),
+                   'Built-JDK': System.getProperty('java.version')
+    }
+
+    
+    from('bundle'){ include 'Zm_ErrorMessages.properties' }
+    baseName 'fileutil-impl'
+     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
+     with jar
+}
+
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                   'Implementation-Version': version
+    }
+    
+    from('bundle'){ include 'Zm_ErrorMessages.properties' }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    
+	into("META-INF/maven/${project.group}/${project.name}"){
+		from "$buildDir" include 'pom.xml'
+	}
+}
+
+dependencies {
+    compile "com.sshtools:j2ssh-maverick:1.5.5",
+            "com.jcraft:jsch:0.1.53",
+            "com.enterprisedt:edtFTPj:2.3",
+            "commons-logging:commons-logging:1.2",
+            /*"sshtools:j2ssh-core:0.2.9",*/
+            "org.slf4j:slf4j-api:1.7.21",
+	        "ch.qos.logback:logback-classic:1.1.7",
+			"cglib:cglib-nodep:3.2.2",
+			"org.codehaus.groovy:groovy-all:2.4.7"
+			
+    
+    testCompile (
+			'junit:junit:4.+',
+			'org.codehaus.groovy:groovy-all:2.4.7',
+			'org.spockframework:spock-core:1.0-groovy-2.4'
+			) 
+    
+}
+
+configurations {
+	//compile.exclude module: 'antlr'
+	//compile.exclude group: 'antlr'
+	compile.exclude module: 'bcprov-jdk14'
+	compile.exclude module: 'bcprov-jdk15on'
+	compile.exclude module: 'bcpkix-jdk15on'
+}
